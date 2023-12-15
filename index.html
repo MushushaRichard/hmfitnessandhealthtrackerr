@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Monitor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.10.0-beta.2/chart.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    header {
+      background-color: #343a40;
+      color: white;
+      text-align: center;
+      padding: 1em;
+    }
+
+    #healthMetrics {
+      margin: 20px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #emergencyButton {
+      display: block;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #trendChart {
+      margin-top: 20px;
+      height: 200px;
+    }
+
+    #recommendations {
+      margin-top: 20px;
+    }
+
+    #userProfile {
+      margin-top: 20px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+
+    #userPreferences {
+      margin-top: 20px;
+    }
+
+    #sleepTracking {
+      margin-top: 20px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+
+    #hydrationMonitoring {
+      margin-top: 20px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+
+    #dashboard {
+      margin-top: 20px;
+      border-top: 2px solid #ccc;
+      padding-top: 20px;
+    }
+
+    #dashboardChart {
+      margin-top: 20px;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Health Monitor</h1>
+  </header>
+
+  <div id="healthMetrics">
+    <h2>Real-time Health Metrics</h2>
+    <p>Heart Rate: <span id="heartRate">N/A</span></p>
+    <p>Temperature: <span id="temperature">N/A</span></p>
+    <p>Oxygen Saturation: <span id="oxygenSaturation">N/A</span></p>
+    <p>Blood Pressure: <span id="bloodPressure">N/A</span></p>
+    <p>GPS Location: <span id="gpsLocation">N/A</span></p>
+
+    <button id="emergencyButton" onclick="triggerEmergency()">Emergency</button>
+  </div>
+
+  <div id="trendChart">
+    <canvas id="healthTrendChart"></canvas>
+  </div>
+
+  <div id="recommendations">
+    <h2>Personalized Health Recommendations</h2>
+    <p id="healthRecommendation">N/A</p>
+  </div>
+
+  <div id="userProfile">
+    <h2>User Profile</h2>
+    <p>Name: <span id="userName">John Doe</span></p>
+    <p>Age: <span id="userAge">30</span></p>
+    <p>Gender: <span id="userGender">Male</span></p>
+  </div>
+
+  <div id="userPreferences">
+    <h2>User Preferences</h2>
+    <label for="heartRatePreference">Heart Rate Limit:</label>
+    <input type="number" id="heartRatePreference" min="60" max="120" step="1" value="80">
+    <button onclick="setUserPreferences()">Set Preferences</button>
+  </div>
+
+  <div id="sleepTracking">
+    <h2>Sleep Tracking</h2>
+    <p>Hours of Sleep: <span id="hoursOfSleep">N/A</span></p>
+  </div>
+
+  <div id="hydrationMonitoring">
+    <h2>Hydration Monitoring</h2>
+    <p>Water Intake: <span id="waterIntake">N/A</span></p>
+  </div>
+
+  <div id="dashboard">
+    <h2>Personalized Dashboard</h2>
+    <div id="dashboardChart">
+      <canvas id="dashboardChartCanvas"></canvas>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.10.0-beta.2/chart.min.js"></script>
+  <script>
+    const heartRateData = [];
+    const oxygenSaturationData = [];
+    const bloodPressureData = [];
+    const sleepData = [];
+    const hydrationData = [];
+
+    function updateHealthMetrics() {
+      // Simulated data, replace with actual data from sensors
+      const heartRate = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
+      const temperature = (Math.random() * (98.6 - 97.0)) + 97.0;
+      const oxygenSaturation = Math.floor(Math.random() * (100 - 90 + 1)) + 90;
+      const bloodPressure = `${Math.floor(Math.random() * (140 - 90 + 1)) + 90}/${Math.floor(Math.random() * (90 - 60 + 1)) + 60}`;
+      const gpsLocation = "Latitude: 37.7749, Longitude: -122.4194"; // Replace with actual GPS data
+
+      // Update HTML elements
+      document.getElementById("heartRate").innerText = heartRate;
+      document.getElementById("temperature").innerText = temperature.toFixed(1);
+      document.getElementById("oxygenSaturation").innerText = oxygenSaturation;
+      document.getElementById("bloodPressure").innerText = bloodPressure;
+      document.getElementById("gpsLocation").innerText = gpsLocation;
+
+      // Update trend chart data
+      heartRateData.push(heartRate);
+      oxygenSaturationData.push(oxygenSaturation);
+      bloodPressureData.push(bloodPressure);
+      updateTrendChart();
+
+      // Simulate emergency if heart rate is too high
+      if (heartRate > parseInt(document.getElementById("heartRatePreference").value, 10)) {
+        triggerEmergency();
+      }
+
+      // Simulate health recommendations
+      updateHealthRecommendations(heartRate, oxygenSaturation, bloodPressure);
+    }
+
+    function triggerEmergency() {
+      // Simulated emergency action, replace with actual emergency handling
+      alert("Emergency triggered! Contacting emergency services.");
+
+      // In a real-world scenario, you might want to call emergency services or perform other actions.
+      // For simplicity, we'll just reset the metrics here.
+      document.getElementById("heartRate").innerText = "N/A";
+      document.getElementById("temperature").innerText = "N/A";
+      document.getElementById("oxygenSaturation").innerText = "N/A";
+      document.getElementById("bloodPressure").innerText = "N/A";
+      document.getElementById("gpsLocation").innerText = "N/A";
+    }
+
+    function updateTrendChart() {
+      // Simulated trend chart using Chart.js library
+      const ctx = document.getElementById('healthTrendChart').getContext('2d');
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: heartRateData.map((_, index) => index),
+          datasets: [{
+            label: 'Heart Rate',
+            data: heartRateData,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false
+          }, {
+            label: 'Oxygen Saturation',
+            data: oxygenSaturationData,
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            fill: false
+          }, {
+            label: 'Blood Pressure',
+            data: bloodPressureData,
+            borderColor: 'rgba(255, 205, 86, 1)',
+            borderWidth: 1,
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom'
+            },
+            y: {
+              min: 0,
+              max: 200
+            }
+          }
+        }
+      });
+    }
+
+    function setUserPreferences() {
+      // Simulate saving user preferences to a backend service
+      const heartRatePreference = document.getElementById("heartRatePreference").value;
+      alert(`User preferences set. Heart rate limit: ${heartRatePreference}`);
+    }
+
+    function updateHealthRecommendations(heartRate, oxygenSaturation, bloodPressure) {
+      // Simulated health recommendations
+      let recommendation = "No specific recommendations at the moment.";
+
+      if (heartRate > 100) {
+        recommendation = "Your heart rate is elevated. Consider reducing your activity level.";
+      } else if (oxygenSaturation < 95) {
+        recommendation = "Your oxygen saturation is low. Take a moment to rest and breathe deeply.";
+      } else if (bloodPressure.split("/")[0] > 130 || bloodPressure.split("/")[1] > 80) {
+        recommendation = "Your blood pressure is elevated. Consider consulting with a healthcare professional.";
+      }
+
+      // Update HTML element
+      document.getElementById("healthRecommendation").innerText = recommendation;
+    }
+
+    function updateSleepTracking() {
+      // Simulated sleep tracking data
+      const hoursOfSleep = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
+
+      // Update HTML element
+      document.getElementById("hoursOfSleep").innerText = hoursOfSleep;
+    }
+
+    function updateHydrationMonitoring() {
+      // Simulated hydration monitoring data
+      const waterIntake = Math.floor(Math.random() * (2000 - 500 + 1)) + 500;
+
+      // Update HTML element
+      document.getElementById("waterIntake").innerText = waterIntake;
+    }
+
+    function updateDashboard() {
+      // Simulated dashboard data using Chart.js library
+      const ctx = document.getElementById('dashboardChartCanvas').getContext('2d');
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Heart Rate', 'Oxygen Saturation', 'Blood Pressure'],
+          datasets: [{
+            label: 'Current Values',
+            data: [heartRateData[heartRateData.length - 1], oxygenSaturationData[oxygenSaturationData.length - 1], bloodPressureData[bloodPressureData.length - 1]],
+            backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)', 'rgba(255, 205, 86, 0.5)'],
+            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 205, 86, 1)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // Update health metrics every 5 seconds (for demonstration purposes)
+    setInterval(() => {
+      updateHealthMetrics();
+      updateSleepTracking();
+      updateHydrationMonitoring();
+      updateDashboard();
+    }, 5000);
+
+    // Initial update
+    updateHealthMetrics();
+    updateSleepTracking();
+    updateHydrationMonitoring();
+    updateDashboard();
+  </script>
+</body>
+</html>
